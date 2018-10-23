@@ -5,6 +5,7 @@ import api
 import random
 
 DB.app = APP
+DB.init_app(APP)
 DB.create_all()
 
 teams = []

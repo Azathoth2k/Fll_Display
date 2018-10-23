@@ -10,6 +10,8 @@ API = Api(APP)
 # Get teams from the database
 def getTeams():
     teams = []
+    drivers = pypyodbc.drivers()
+    print(drivers)
     if APP.config['TEST_DB']:
         # In test mode, use the sqlite database
         teams = Team.query.all()
@@ -18,6 +20,7 @@ def getTeams():
     else:
         # In production mode, get the data from the Access database
         # Create the database connection
+        print(APP.config['DB_FILE'])
         conn = pypyodbc.connect(
             r"Driver={Microsoft Access Driver (*.mdb, *.accdb)};" +
             r"Dbq=" + APP.config['DB_FILE'] + ";")
@@ -31,7 +34,7 @@ def getTeams():
             Trial4Score, Trial5Score, Trial6Score, Trial7Score,
             ToRound4, ToRound5,
             ToRound6, ToRound7,
-            Trial1PenaltyCount, Trial2PenaltyCount, 
+            Trial1PenaltyCount, Trial2PenaltyCount,
             Trial3PenaltyCount, Trial4PenaltyCount,
             Trial5PenaltyCount, Trial6PenaltyCount,
             Trial7PenaltyCount
@@ -39,6 +42,7 @@ def getTeams():
             ''')
 
         # Build the list of Team objects
+        print(cur.fetchall)
         for row in cur.fetchall():
             # Build the team object
             team = Team(
@@ -68,15 +72,16 @@ def getTeams():
             teams.append(team)
 
         # Close the database connection
+        print(teams[1].number,teams[1].bestScore,teams[1].round1)
         cur.close()
         conn.close()
-    
+
     return teams
 
 def rankTeams(teams):
     return sorted(
         teams,
-        key=lambda x: (x.bestScore, x.secondBestScore, x.worstScore, -x.bestScorePenalties, -x.secondBestScorePenalties, -x.worstScorePenalties),
+        key=lambda x: (x.bestScore, x.secondBestScore, x.thirdBestScore, x.fourthBestScore, x.worstScore, -x.bestScorePenalties, -x.secondBestScorePenalties, x.thirdBestScorePenalties, x.fourthBestScorePenalties, -x.worstScorePenalties),
         reverse=True)
 
 
@@ -88,6 +93,8 @@ teamFields = {
     "round1": fields.Integer,
     "round2": fields.Integer,
     "round3": fields.Integer,
+    "round4": fields.Integer,
+    "round5": fields.Integer,
     "bestScore": fields.Integer,
     "rank": fields.Integer
 }
@@ -108,24 +115,24 @@ class Rankings(Resource):
     def get(self):
         teams = getTeams()
         rankedTeams = rankTeams(teams)
-             
+
         i = 1
         for team in rankedTeams:
             team.rank = i
             i += 1
-        
+
         return rankedTeams
 
 
 class Playoffs(Resource):
-    
+
     """Setup a REST resource for the playoff data"""
-    
+
     @marshal_with(playoffFields)
     def get(self, roundNumber):
         # Get only the teams that are marked to advance to the selected round
         teams = [t for t in getTeams() if t.isAdvancingToRound(roundNumber)]
-        
+
         # Add a temporary attribute 'score' to the team objects, for generic REST output
         for team in teams:
             team.score = team.getRoundScore(roundNumber)
@@ -135,7 +142,7 @@ class Playoffs(Resource):
             teams,
             key=lambda x: (x.getRoundScore(roundNumber), -x.getRoundPenalties(roundNumber)),
             reverse=True)
-        
+
 
 # map resource to URL
 API.add_resource(Rankings, '/api/teams')

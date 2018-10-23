@@ -1,7 +1,7 @@
-{% extends "base.html" %}        
+{% extends "base.html" %}
 {% block header %}
     <script type="text/javascript">
-        $(document).ready(function () { 
+        $(document).ready(function () {
             // Initialize the DataTable component
             var myTable = $('#teamsTable').DataTable({
                 "searching": false,
@@ -11,7 +11,7 @@
                     "url": "/api/teams",
                     "dataSrc": "",
                     "error": function() {
-                        console.log("Unable to get data from server");   
+                        console.log("Unable to get data from server");
                     }
                 },
                 "columns": [
@@ -22,6 +22,8 @@
                     { "data": "round1", "class": "aligncenter" },
                     { "data": "round2", "class": "aligncenter" },
                     { "data": "round3", "class": "aligncenter" },
+                    { "data": "round4", "class": "aligncenter" },
+                    { "data": "round5", "class": "aligncenter" },
                     { "data": "bestScore", "class": "aligncenter" }
                 ],
                 "info": false
@@ -37,9 +39,9 @@
                 // If on the final page, reload the data then start again
                 if(page >= pageCount) {
                     myTable.ajax.reload();
-                    myTable.page(0).draw(false);    
+                    myTable.page(0).draw(false);
                     pageCount = myTable.page.info().pages;
-                    page = 0;    
+                    page = 0;
                 }
 
                 // Set the table page and redraw
@@ -62,6 +64,8 @@
                     <th>Round 1</th>
                     <th>Round 2</th>
                     <th>Round 3</th>
+                    <th>Round 4</th>
+                    <th>Round 5</th>
                     <th>Best</th>
                 </thead>
             </table>

@@ -85,7 +85,9 @@ class Team(DB.Model):
     def sortScores(self):
         scores = [self.Score(1, self.round1, self.round1Penalties),
                   self.Score(2, self.round2, self.round2Penalties),
-                  self.Score(3, self.round3, self.round3Penalties)]
+                  self.Score(3, self.round3, self.round3Penalties),
+                  self.Score(4, self.round4, self.round4Penalties),
+                  self.Score(5, self.round5, self.round5Penalties)]
         sorted_scores = sorted(
             scores,
             key=lambda x: (x.score, -x.penalties),
@@ -93,13 +95,15 @@ class Team(DB.Model):
 
         self.bestScore = sorted_scores[0].score
         self.bestScorePenalties = sorted_scores[0].penalties
-
         self.secondBestScore = sorted_scores[1].score
         self.secondBestScorePenalties = sorted_scores[1].penalties
+        self.thirdBestScore = sorted_scores[2].score
+        self.thirdBestScorePenalties = sorted_scores[2].penalties
+        self.fourthBestScore = sorted_scores[3].score
+        self.fourthBestScorePenalties = sorted_scores[3].penalties
+        self.worstScore = sorted_scores[4].score
+        self.worstScorePenalties = sorted_scores[4].penalties
 
-        self.worstScore = sorted_scores[2].score
-        self.worstScorePenalties = sorted_scores[2].penalties
-        
     def getRoundScore(self, roundNumber):
         scores = [self.round1, self.round2, self.round3, self.round4, self.round5, self.round6, self.round7]
         return scores[roundNumber-1]
@@ -115,17 +119,17 @@ class Team(DB.Model):
             self.round7Penalties]
 
         return self.default_to_zero(penalties[roundNumber-1])
-    
+
     def isAdvancingToRound(self, roundNumber):
         advances = [self.advanceTo4, self.advanceTo5, self.advanceTo6, self.advanceTo7]
         return advances[roundNumber-4] == 'Yes'
-        
+
     def fixInput(self, data):
         """Convert unicode data to ASCII."""
-        if isinstance(data, unicode):
-            return data.encode('ascii', 'ignore')
-        else:
-            return data
+#       if isinstance(data, unicode):
+#          return data.encode('ascii', 'ignore')
+#        else:
+        return data
 
     @staticmethod
     def default_to_zero(number):
@@ -133,8 +137,7 @@ class Team(DB.Model):
             return 0
         else:
             return number
-        
+
     def toString(self):
         """Generate a string representing the project."""
         return "%s: name=%s" % (self.number, self.name)
-    
